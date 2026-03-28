@@ -12,9 +12,9 @@ BOARD-NAME/
 
 Each project demonstrates the same core functionality: aProfessional Web UI dashboard (LED control + OTA firmware update) and MQTT-based remote device control and OTA updates
 
-<center>
+<div align="center">
   <img src="screenshot.webp" alt="Mongoose Wizard dashboard" width="75%"/>
-</center>
+</div>
 
 
 The `make` project is the most minimal bare-metal implementation. It uses only Mongoose and CMSIS headers, no external frameworks or vendor libraries. It includes lightweight `hal.c` / `hal.h` implemented directly on top of CMSIS. Best suited for understanding low-level
