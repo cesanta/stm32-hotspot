@@ -3,12 +3,12 @@
 1. Open the .ioc file in your CubeMX
 2. Click on "Project Manager", select "Cmake" as toolchain/IDE, click "Generate Code" on the right top. It will populate this directory with the generated project code.
 3. Open this directory in Vscode. Make sure you have STM32 Cube extension installed
-4. Add Core/Inc/mongoose_config.h file with the following contents:
+4. Add `Core/Inc/mongoose_config.h` file with the following contents:
 ```c
 #define MG_ARCH MG_ARCH_CUBE
 #define MG_ENABLE_PACKED_FS 1
 ```
-4. Edit the top-level CMakeLists.txt to add Mongoose files to the build process:
+5. Edit the top-level `CMakeLists.txt` to add Mongoose files to the build process:
 ```cmake
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
@@ -25,21 +25,21 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ../../desktop/mongoose/
 )
 ```
-6. At the end of top-level CMakeLists.txt, add this snippet to generate .bin file:
-```text
+6. At the end of top-level `CMakeLists.txt`, add this snippet to generate .bin file:
+```cmake
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
   COMMAND ${CMAKE_OBJCOPY} -O binary
           ${PROJECT_NAME}.elf
           ${PROJECT_NAME}.bin
 )
 ```
-5. Edit Core/Src/main.c and update the following snippets - notice the "USER CODE BEGIN" / "USER CODE END" placeholders. At the top of the file:
+6. Edit `Core/Src/main.c` and update the following snippets - notice the `USER CODE BEGIN` / `USER CODE END` placeholders. At the top of the file:
 ```c
 /* USER CODE BEGIN Includes */
 #include "mongoose_glue.h"
 /* USER CODE END Includes */
 ```
-Before the main() function:
+Before the `main()` function:
 ```c
 /* USER CODE BEGIN 0 */
 int _write(int fd, unsigned char *buf, int len) {
@@ -61,7 +61,7 @@ void my_set_leds(struct leds *data) {
 /* USER CODE END 0 */
 ```
 
-Inside the main() function:
+Inside the `main()` function:
 ```c
 /* USER CODE BEGIN WHILE */
 mongoose_init();
@@ -71,7 +71,7 @@ while (1)
   mongoose_poll();
   /* USER CODE END WHILE */
 ```
-6. Start serial console, build, flash, look at the IP address in the logs, enter it in your browser - and you have the web dashboard running!
+7. Start serial console, build, flash, look at the IP address in the logs, enter it in your browser - and you have the web dashboard running!
 
 In the web dashboard, you should be able to toggle LEDs, and perform firmware update
 from the "Firmware Update" page. To update the firmware, click on the firmware update
