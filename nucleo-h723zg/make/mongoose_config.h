@@ -3,15 +3,15 @@
 // See https://mongoose.ws/docs/getting-started/build-options/
 #define MG_ARCH MG_ARCH_ARMGCC
 #define MG_TLS MG_TLS_BUILTIN
-#define MG_OTA MG_OTA_STM32F
+#define MG_OTA MG_OTA_STM32H7
 
 #define MG_ENABLE_TCPIP 1
 #define MG_ENABLE_CUSTOM_MILLIS 1
 #define MG_ENABLE_CUSTOM_RANDOM 1
-#define MG_ENABLE_DRIVER_STM32F 1
+#define MG_ENABLE_DRIVER_STM32H 1
 #define MG_ENABLE_PACKED_FS 1
 
-// #define MG_DRIVER_MDC_CR 4   // RMII MDC clock divider, from 0 to 4
+// #define MG_DRIVER_MDC_CR 4   // RMII MDC clock divider, from 0 to 5
 // #define MG_TCPIP_PHY_ADDR 0  // PHY address
 
 // For static IP configuration, define MG_TCPIP_{IP,MASK,GW}
@@ -22,7 +22,7 @@
 // #define MG_TCPIP_MASK MG_IPV4(255, 255, 255, 0)  // Netmask
 
 // Construct MAC address from the MCU unique ID
-#define MGUID ((uint32_t *) 0x1ff0f420)  // Unique 96-bit chip ID
+#define MGUID ((uint32_t *) 0x1ff1e800)  // Unique 96-bit chip ID
 #define MG_SET_MAC_ADDRESS(mac)      \
   do {                               \
     mac[0] = 2;                      \

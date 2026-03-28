@@ -57,8 +57,9 @@ The functionality is identical across all projects and is built using the [Web U
 5. Click "Generate C/C++ code" in the top right corner  
 6. Done - rebuild your embedded project to apply the updated UI  
 
-Note - no frontend or networking expertise is required. See [Mongoose YouTube Videos](https://www.youtube.com/@mongoose-networking-library/videos) for reference.
-
+Note - no frontend or networking expertise is required. References and guides:
+- [Mongoose YouTube Videos](https://www.youtube.com/@mongoose-networking-library/videos)
+- [Board pinouts reference](https://mongoose.ws/docs/hardware/board-pinouts/)
 
 ## Commercial use
 
