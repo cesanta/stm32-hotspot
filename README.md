@@ -1,13 +1,14 @@
 # STM32 Mongoose TCP/IP
 
-This repository contains example projects for Mongoose TCP/IP stack
-integration for various STM32 development boards. Every board has
-two projects:
+This repository contains example Mongoose projects for various STM32 development boards.
+[Mongoose](https://mongoose.ws/) is a lightweight networking library which includes built-in TCP/IP stack, TLS, HTTP, WebSocket, MQTT and firmware updates.
+
+Every board has two direcotories containing projects for different build systems:
 
 ```text
 BOARD-NAME/
-          make/       <--- a minimal, pure CMSIS implementation
-          cubemx/     <--- CubeMX / vscode implementation
+          make/       <--- make+GCC: minimal, pure CMSIS
+          cubemx/     <--- CubeMX: Vscode or CubeIDE
 ```
 
 Each project demonstrates the same core functionality: aProfessional Web UI dashboard (LED control + OTA firmware update) and MQTT-based remote device control and OTA updates
