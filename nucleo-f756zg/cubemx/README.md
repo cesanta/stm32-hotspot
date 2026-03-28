@@ -81,8 +81,4 @@ while (1)
 {
   /* USER CODE END WHILE */
 ```
-7. Start serial console, build, flash, look at the IP address in the logs, enter it in your browser - and you have the web dashboard running!
-
-In the web dashboard, you should be able to toggle LEDs, and perform firmware update
-from the "Firmware Update" page. To update the firmware, click on the firmware update
-button on the dashboard, and choose the bult '.bin' file from the `build/Debug` directory.
+7. Build the firmware. See [top level README](../../README.md#cubemx) on how to test it
