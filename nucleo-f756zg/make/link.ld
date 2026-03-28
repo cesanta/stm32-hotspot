@@ -10,7 +10,8 @@ SECTIONS {
   .text     : { *(.text* .text.*) }     > flash
   .rodata   : { *(.rodata*) }           > flash
 
-  .data : { _sdata = .; *(.first_data) *(.data SORT(.data.*)) _edata = .; } > sram AT > flash
+  /* Note the .iram section, for functions copied to RAM. Required for MG_IRAM OTA support */
+  .data : { _sdata = .; *(.first_data) *(.iram .iram* .iram.*) *(.data SORT(.data.*)) _edata = .; } > sram AT > flash
   _sidata = LOADADDR(.data);
 
   .bss : { _sbss = .; *(.bss SORT(.bss.*) COMMON) _ebss = .; } > sram

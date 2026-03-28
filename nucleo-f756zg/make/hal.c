@@ -20,9 +20,12 @@ uint64_t hal_get_tick(void) {
   return s_ticks;
 };
 
-uint32_t SystemCoreClock;
+uint32_t SystemCoreClock = 160000000;
 void SystemInit(void) {  // Called automatically by startup code
+  hal_system_init();  // Enable FPU
 }
+
+void ExitRun0Mode(void) {}
 
 struct stat;
 __attribute__((weak)) int _fstat(int fd, struct stat *st) {

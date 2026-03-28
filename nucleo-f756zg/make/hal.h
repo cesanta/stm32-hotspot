@@ -17,6 +17,17 @@
 #define PINNO(pin) (pin & 255)
 #define PINBANK(pin) (pin >> 8)
 
+#define HAL_ETH_PINS                  \
+  PIN('A', 1),      /* ETH_REF_CLK */ \
+      PIN('A', 2),  /* ETH_MDIO */    \
+      PIN('A', 7),  /* ETH_CRS_DV */  \
+      PIN('C', 1),  /* ETH_MDC */     \
+      PIN('C', 4),  /* ETH_RXD0 */    \
+      PIN('C', 5),  /* ETH_RXD1 */    \
+      PIN('B', 13), /* ETH_TXD1 */    \
+      PIN('G', 11), /* ETH_TX_EN */   \
+      PIN('G', 13)  /* ETH_TXD0 */
+
 extern bool hal_timer_expired(volatile uint64_t *t, uint64_t prd, uint64_t now);
 extern uint64_t hal_get_tick(void);
 extern size_t hal_ram_free(void);
@@ -28,16 +39,29 @@ extern uint32_t SystemCoreClock;
 3.3.2, Table 5: configure flash latency (WS) in accordance to clock freq
 38.4: The AHB clock frequency must be at least 25 MHz when the Ethernet
 controller is used */
-enum { HAL_APB1_PRE = 5 /* AHB clock / 4 */, HAL_APB2_PRE = 4 /* AHB clock / 2 */ };
+enum {
+  HAL_APB1_PRE = 5 /* AHB clock / 4 */,
+  HAL_APB2_PRE = 4 /* AHB clock / 2 */
+};
 enum { PLL_HSI = 16, PLL_M = 8, PLL_N = 216, PLL_P = 2 };  // Run at 216 Mhz
 #define FLASH_LATENCY 7
 #define SYS_FREQUENCY ((PLL_HSI * PLL_N / PLL_M / PLL_P) * 1000000)
 #define APB2_FREQUENCY (SYS_FREQUENCY / (BIT(HAL_APB2_PRE - 3)))
 #define APB1_FREQUENCY (SYS_FREQUENCY / (BIT(HAL_APB1_PRE - 3)))
 
-enum { HAL_GPIO_MODE_INPUT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_MODE_AF, HAL_GPIO_MODE_ANALOG };
+enum {
+  HAL_GPIO_MODE_INPUT,
+  HAL_GPIO_MODE_OUTPUT,
+  HAL_GPIO_MODE_AF,
+  HAL_GPIO_MODE_ANALOG
+};
 enum { HAL_GPIO_OTYPE_PUSH_PULL, HAL_GPIO_OTYPE_OPEN_DRAIN };
-enum { HAL_GPIO_SPEED_LOW, HAL_GPIO_SPEED_MEDIUM, HAL_GPIO_SPEED_HIGH, HAL_GPIO_SPEED_INSANE };
+enum {
+  HAL_GPIO_SPEED_LOW,
+  HAL_GPIO_SPEED_MEDIUM,
+  HAL_GPIO_SPEED_HIGH,
+  HAL_GPIO_SPEED_INSANE
+};
 enum { HAL_GPIO_PULL_NONE, HAL_GPIO_PULL_UP, HAL_GPIO_PULL_DOWN };
 #define HAL_GPIO(N) ((GPIO_TypeDef *) (0x40020000 + 0x400 * (N)))
 
@@ -57,7 +81,7 @@ static inline void hal_gpio_write(uint16_t pin, bool val) {
   gpio->BSRR = BIT(PINNO(pin)) << (val ? 0 : 16);
 }
 static inline void hal_gpio_init(uint16_t pin, uint8_t mode, uint8_t type,
-                             uint8_t speed, uint8_t pull, uint8_t af) {
+                                 uint8_t speed, uint8_t pull, uint8_t af) {
   GPIO_TypeDef *gpio = hal_gpio_bank(pin);
   uint8_t n = (uint8_t) (PINNO(pin));
   RCC->AHB1ENR |= BIT(PINBANK(pin));  // Enable GPIO clock
@@ -69,12 +93,12 @@ static inline void hal_gpio_init(uint16_t pin, uint8_t mode, uint8_t type,
   CLRSET(gpio->MODER, 3UL << (n * 2), ((uint32_t) mode) << (n * 2));
 }
 static inline void hal_gpio_input(uint16_t pin) {
-  hal_gpio_init(pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_OTYPE_PUSH_PULL, HAL_GPIO_SPEED_HIGH,
-            HAL_GPIO_PULL_NONE, 0);
+  hal_gpio_init(pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_OTYPE_PUSH_PULL,
+                HAL_GPIO_SPEED_HIGH, HAL_GPIO_PULL_NONE, 0);
 }
 static inline void hal_gpio_output(uint16_t pin) {
-  hal_gpio_init(pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_OTYPE_PUSH_PULL, HAL_GPIO_SPEED_HIGH,
-            HAL_GPIO_PULL_NONE, 0);
+  hal_gpio_init(pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_OTYPE_PUSH_PULL,
+                HAL_GPIO_SPEED_HIGH, HAL_GPIO_PULL_NONE, 0);
 }
 
 static inline void hal_irq_exti_attach(uint16_t pin) {
@@ -102,8 +126,10 @@ static inline void hal_uart_init(USART_TypeDef *uart, unsigned long baud) {
   if (uart == USART2) tx = PIN('A', 2), rx = PIN('A', 3);
   if (uart == USART3) tx = PIN('D', 8), rx = PIN('D', 9);
 
-  hal_gpio_init(tx, HAL_GPIO_MODE_AF, HAL_GPIO_OTYPE_PUSH_PULL, HAL_GPIO_SPEED_HIGH, 0, af);
-  hal_gpio_init(rx, HAL_GPIO_MODE_AF, HAL_GPIO_OTYPE_PUSH_PULL, HAL_GPIO_SPEED_HIGH, 0, af);
+  hal_gpio_init(tx, HAL_GPIO_MODE_AF, HAL_GPIO_OTYPE_PUSH_PULL,
+                HAL_GPIO_SPEED_HIGH, 0, af);
+  hal_gpio_init(rx, HAL_GPIO_MODE_AF, HAL_GPIO_OTYPE_PUSH_PULL,
+                HAL_GPIO_SPEED_HIGH, 0, af);
   uart->CR1 = 0;                          // Disable this UART
   uart->BRR = freq / baud;                // Set baud rate
   uart->CR1 |= BIT(0) | BIT(2) | BIT(3);  // Set UE, RE, TE
@@ -112,7 +138,8 @@ static inline void hal_uart_write_byte(USART_TypeDef *uart, uint8_t byte) {
   uart->TDR = byte;
   while ((uart->ISR & BIT(7)) == 0) (void) 0;
 }
-static inline void hal_uart_write_buf(USART_TypeDef *uart, char *buf, size_t len) {
+static inline void hal_uart_write_buf(USART_TypeDef *uart, char *buf,
+                                      size_t len) {
   while (len-- > 0) hal_uart_write_byte(uart, *(uint8_t *) buf++);
 }
 static inline int hal_uart_read_ready(USART_TypeDef *uart) {
@@ -135,12 +162,11 @@ static inline uint32_t hal_rng_read(void) {
 static inline void hal_ethernet_init(void) {
   // Initialise Ethernet. Enable MAC GPIO pins, see
   // https://www.farnell.com/datasheets/2014265.pdf section 6.10
-  uint16_t pins[] = {PIN('A', 1),  PIN('A', 2),  PIN('A', 7),
-                     PIN('B', 13), PIN('C', 1),  PIN('C', 4),
-                     PIN('C', 5),  PIN('G', 11), PIN('G', 13)};
+  uint16_t pins[] = {HAL_ETH_PINS};
   for (size_t i = 0; i < sizeof(pins) / sizeof(pins[0]); i++) {
-    hal_gpio_init(pins[i], HAL_GPIO_MODE_AF, HAL_GPIO_OTYPE_PUSH_PULL, HAL_GPIO_SPEED_INSANE,
-              HAL_GPIO_PULL_NONE, 11);  // 11 is the Ethernet function
+    hal_gpio_init(pins[i], HAL_GPIO_MODE_AF, HAL_GPIO_OTYPE_PUSH_PULL,
+                  HAL_GPIO_SPEED_INSANE, HAL_GPIO_PULL_NONE,
+                  11);  // 11 is the Ethernet function
   }
   NVIC_EnableIRQ(ETH_IRQn);                // Setup Ethernet IRQ handler
   SYSCFG->PMC |= SYSCFG_PMC_MII_RMII_SEL;  // Use RMII. Goes first!
@@ -149,16 +175,18 @@ static inline void hal_ethernet_init(void) {
 }
 
 static inline void hal_clock_init(void) {
-  FLASH->ACR |= FLASH_LATENCY | BIT(8) | BIT(9);    // Flash latency, prefetch
-  RCC->PLLCFGR &= ~((BIT(17) - 1));                 // Clear PLL multipliers
-  RCC->PLLCFGR |= (((PLL_P - 2) / 2) & 3) << 16;    // Set PLL_P
-  RCC->PLLCFGR |= PLL_M | (PLL_N << 6);             // Set PLL_M and PLL_N
-  RCC->CR |= BIT(24);                               // Enable PLL
-  while ((RCC->CR & BIT(25)) == 0) (void) 0;        // Wait until done
+  FLASH->ACR |= FLASH_LATENCY | BIT(8) | BIT(9);  // Flash latency, prefetch
+  RCC->PLLCFGR &= ~((BIT(17) - 1));               // Clear PLL multipliers
+  RCC->PLLCFGR |= (((PLL_P - 2) / 2) & 3) << 16;  // Set PLL_P
+  RCC->PLLCFGR |= PLL_M | (PLL_N << 6);           // Set PLL_M and PLL_N
+  RCC->CR |= BIT(24);                             // Enable PLL
+  while ((RCC->CR & BIT(25)) == 0) (void) 0;      // Wait until done
   RCC->CFGR = (HAL_APB1_PRE << 10) | (HAL_APB2_PRE << 13);  // Set prescalers
-  RCC->CFGR |= 2;                                   // Set clock source to PLL
-  while ((RCC->CFGR & 12) == 0) (void) 0;           // Wait until done
+  RCC->CFGR |= 2;                          // Set clock source to PLL
+  while ((RCC->CFGR & 12) == 0) (void) 0;  // Wait until done
   RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;    // Enable SYSCFG
+  SystemCoreClock = SYS_FREQUENCY;         // Update SystemCoreClock global var
+  SysTick_Config(SystemCoreClock / 1000);  // Sys tick every 1ms
 }
 
 static inline void hal_system_init(void) {
