@@ -27,8 +27,6 @@ The `cubemx` project provides STM32CubeMX-based setup. It includes a `.ioc` conf
 2. Generate a project (VS Code, CubeIDE, or any IDE)  
 3. Follow the README to integrate Mongoose  
 
-This project is best suited for developers familiar with CubeMX ecosystem.
-
 
 All projects functionality is identical and built using the Mongoose Visual [Web UI Builder](https://mongoose.ws/wizard/) . It is easy to alter its functionality and build a production firmware - just load the `mongoose/mongoose_wizard.json` in the Web UI builder
 and start altering it. No frontend or network programming skills are required.
