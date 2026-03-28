@@ -15,12 +15,13 @@ SECTIONS {
   .text     : { *(.text* .text.*) }     > flash
   .rodata   : { *(.rodata*) }           > flash
 
-  .data : { _sdata = .; *(.first_data) *(.data SORT(.data.*)) _edata = .; } > ram_d1 AT > flash
+  /* Note the .iram section, for functions copied to RAM. Required for MG_IRAM OTA support */
+  .data : { _sdata = .; *(.first_data) *(.iram .iram* .iram.*) *(.data SORT(.data.*)) _edata = .; } > ram_d1 AT > flash
   _sidata = LOADADDR(.data);
 
   .bss : { _sbss = .; *(.bss SORT(.bss.*) COMMON) _ebss = .; } > ram_d1
 
-  .eth_ram : { *(.eth_ram .eth_ram*) } > ram_d2 AT > flash
+  .eth_ram : { *(.eth_ram .eth_ram*) } > ram_d1 AT > flash
 
   . = ALIGN(8);
   _end = .;

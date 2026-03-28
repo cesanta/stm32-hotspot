@@ -43,7 +43,7 @@ extern "C" {
 #define MG_ARCH_CMSIS_RTOS2 13  // CMSIS-RTOS API v2 (Keil RTX5, FreeRTOS)
 #define MG_ARCH_RTTHREAD 14     // RT-Thread RTOS
 #define MG_ARCH_ARMCGT 15       // Texas Semi ARM-CGT
-#define MG_ARCH_CUBE 16         // STM32Cube environment
+#define MG_ARCH_CUBE 16	        // STM32Cube environment
 
 #define MG_ARCH_NEWLIB MG_ARCH_ARMGCC  // Alias, deprecate in 2025
 
@@ -184,8 +184,15 @@ extern "C" {
 #elif !defined(MG_OTA) && defined(STM32H7)
 #define MG_OTA MG_OTA_STM32H7
 #endif
+
 // use HAL-defined execute-in-ram section
+#ifndef MG_IRAM
 #define MG_IRAM __attribute__((section(".RamFunc")))
+#endif
+
+#ifndef MG_ETH_RAM
+#define MG_ETH_RAM __attribute__((section(".eth_ram")))
+#endif
 
 #ifndef HAL_ICACHE_MODULE_ENABLED
 #define HAL_ICACHE_IsEnabled() 0
@@ -1658,10 +1665,8 @@ enum {
   MG_EV_MQTT_OPEN,  // MQTT CONNACK received        int *connack_status_code
   MG_EV_SNTP_TIME,  // SNTP time received           uint64_t *epoch_millis
   MG_EV_WAKEUP,     // mg_wakeup() data received    struct mg_str *data
-  MG_EV_MDNS_A,     // mDNS A record request        struct mg_mdns_req *
-  MG_EV_MDNS_PTR,   // mDNS PTR record request      struct mg_mdns_req *
-  MG_EV_MDNS_SRV,   // mDNS SRV record request      struct mg_mdns_req *
-  MG_EV_MDNS_TXT,   // mDNS TXT record request      struct mg_mdns_req *
+  MG_EV_MDNS_REQ,   // mDNS request                 struct mg_mdns_req *
+  MG_EV_MDNS_RESP,  // mDNS response                struct mg_mdns_resp *
   MG_EV_USER        // Starting ID for user events
 };
 
@@ -2952,6 +2957,12 @@ size_t mg_mqtt_next_prop(struct mg_mqtt_message *, struct mg_mqtt_prop *,
 
 
 
+#define MG_DNS_RTYPE_A 1
+#define MG_DNS_RTYPE_PTR 12
+#define MG_DNS_RTYPE_TXT 16
+#define MG_DNS_RTYPE_AAAA 28
+#define MG_DNS_RTYPE_SRV 33
+
 // Mongoose sends DNS queries that contain only one question:
 // either A (IPv4) or AAAA (IPv6) address lookup.
 // Therefore, we expect zero or one answer.
@@ -2987,16 +2998,24 @@ struct mg_dnssd_record {
   uint16_t port;            // SRV record port
 };
 
-// mDNS request
+// mDNS request and response data structs passed to event handlers
 struct mg_mdns_req {
   struct mg_dns_rr *rr;
   struct mg_dnssd_record *r;
   struct mg_str reqname;   // requested name in RR
-  struct mg_str respname;  // actual name in response
-  struct mg_addr addr;
+  struct mg_str respname;  // actual name to use in response
+  struct mg_addr *addr;    // actual address to use in response
   bool is_listing;
   bool is_resp;
   bool is_unicast;
+};
+
+struct mg_mdns_resp {
+  struct mg_dns_rr *rr;
+  // TODO(scaprile )struct mg_str srvcproto; struct mg_str txt; uint16_t port; ?
+  struct mg_str name;
+  struct mg_addr addr;
+  // TODO(scaprile); bool has_A; bool has_PTR; bool has_SRV; bool has_TXT; ?
 };
 
 void mg_resolve(struct mg_connection *, const char *url);
@@ -3007,6 +3026,7 @@ size_t mg_dns_parse_rr(const uint8_t *buf, size_t len, size_t ofs,
 
 struct mg_connection *mg_mdns_listen(struct mg_mgr *mgr, mg_event_handler_t fn,
                                      void *fn_data);
+bool mg_mdns_query(struct mg_connection *, const char *, unsigned int);
 
 
 
@@ -3083,7 +3103,7 @@ void mg_rpc_list(struct mg_rpc_req *r);
 #define MG_OTA_RT1060 302   // IMXRT1060
 #define MG_OTA_RT1064 303   // IMXRT1064
 #define MG_OTA_RT1170 304   // IMXRT1170
-#define MG_OTA_MCXN 310   // MCXN947
+#define MG_OTA_MCXN 310 	// MCXN947
 #define MG_OTA_RW612 320    // FRDM-RW612
 #define MG_OTA_FLASH 900    // OTA via an internal flash
 #define MG_OTA_ESP32 910    // ESP32 OTA implementation
@@ -3151,11 +3171,16 @@ struct mg_wifi_scan_bss_data {
 #define MG_WIFI_SECURITY_WPA MG_BIT(1)
 #define MG_WIFI_SECURITY_WPA2 MG_BIT(2)
 #define MG_WIFI_SECURITY_WPA3 MG_BIT(3)
+#define MG_WIFI_SECURITY_WPA_ENTERPRISE MG_BIT(4)
+#define MG_WIFI_SECURITY_WPA2_ENTERPRISE MG_BIT(5)
+#define MG_WIFI_SECURITY_WPA3_ENTERPRISE MG_BIT(6)
   uint8_t channel;
   unsigned band : 2;
 #define MG_WIFI_BAND_2G 0
 #define MG_WIFI_BAND_5G 1
   unsigned has_n : 1;
+  unsigned has_ac : 1;
+  unsigned has_ax : 1;
 };
 
 bool mg_wifi_scan(void);

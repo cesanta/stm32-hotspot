@@ -19,7 +19,6 @@ static void blink_task(void) {
   static uint64_t blink_timer = 0;
   if (hal_timer_expired(&blink_timer, 500, hal_get_tick())) {
     hal_gpio_toggle(LED1);
-    printf("Tick: %lu\r\n", (unsigned long) hal_get_tick());
   }
 }
 
@@ -48,10 +47,14 @@ void my_set_leds(struct leds *data) {
 
 int main(void) {
   hal_clock_init();
-  hal_rng_init();
-  hal_gpio_output(LED1);
   hal_uart_init(DEBUG_UART, 115200);
-  printf("Initialised. CPU clock: %lu\r\n", SystemCoreClock / 1000000);
+  hal_rng_init();
+  hal_ethernet_init();
+  hal_gpio_output(LED1);
+  hal_gpio_output(LED2);
+  hal_gpio_output(LED3);
+
+  printf("Initialised. CPU clock: %lu MHz\r\n", SystemCoreClock / 1000000);
 
   mongoose_init();
   mongoose_set_http_handlers("leds", my_get_leds, my_set_leds);

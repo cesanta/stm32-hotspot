@@ -25,6 +25,10 @@ extern uint32_t SystemCoreClock;
 #define PINNO(pin) (pin & 255)
 #define PINBANK(pin) (pin >> 8)
 
+#define HAL_ETH_PINS  PIN('A', 1),  PIN('A', 2),  PIN('A', 7), \
+                      PIN('B', 13), PIN('C', 1),  PIN('C', 4), \
+                      PIN('C', 5),  PIN('G', 11), PIN('G', 13)
+
 // System clock (2.1, Figure 1; 8.5, Figure 45; 8.5.5, Figure 47; 8.5.6, Figure
 // 49; 8.5.8 Table 56; datasheet) CPU_FREQUENCY <= 550 MHz; hclk = CPU_FREQUENCY
 // / HAL_HPRE ; hclk <= 275 MHz; APB clocks <= 137.5 MHz. D1 domain bus matrix (and
@@ -159,9 +163,7 @@ static inline uint32_t hal_rng_read(void) {
 static inline void hal_ethernet_init(void) {
   // Initialise Ethernet. Enable MAC GPIO pins, see
   // https://www.st.com/resource/en/user_manual/um2407-stm32h7-nucleo144-boards-mb1364-stmicroelectronics.pdf
-  uint16_t pins[] = {PIN('A', 1),  PIN('A', 2),  PIN('A', 7),
-                     PIN('B', 13), PIN('C', 1),  PIN('C', 4),
-                     PIN('C', 5),  PIN('G', 11), PIN('G', 13)};
+  uint16_t pins[] = {HAL_ETH_PINS};
   for (size_t i = 0; i < sizeof(pins) / sizeof(pins[0]); i++) {
     hal_gpio_init(pins[i], HAL_GPIO_MODE_AF, HAL_GPIO_OTYPE_PUSH_PULL, HAL_GPIO_SPEED_INSANE,
         HAL_GPIO_PULL_NONE, 11);  // 11 is the Ethernet function
@@ -210,6 +212,8 @@ static inline void hal_clock_init(void) {
   FLASH->ACR = HAL_FLASH_LATENCY;                          // default is larger
   RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;      // Enable SYSCFG
   while ((RCC->CR & BIT(13)) == 0) hal_spin(1);  // Make sure HSI48 is ready
+  SystemCoreClock = SYS_FREQUENCY;         // Update SystemCoreClock global var
+  SysTick_Config(SystemCoreClock / 1000);  // Sys tick every 1ms
 }
 
 static inline void hal_system_init(void) {

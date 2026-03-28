@@ -81,4 +81,8 @@ while (1)
 {
   /* USER CODE END WHILE */
 ```
-7. Build the firmware. See [top level README](../../README.md#cubemx) on how to test it
+7. Edit `STM32H723XG_FLASH.ld`, add the following line before the `.bss (NOLOAD)` line:
+```text
+.eth_ram : { *(.eth_ram .eth_ram*) } > RAM_D2 AT > FLASH
+```
+8. Build the firmware. See [top level README](../../README.md#cubemx) on how to test it
